@@ -1,0 +1,53 @@
+version: 1
+canonical_root: .agents/skills
+github_mirror_root: .github/skills
+selection_policy: load only for actual task need; multiple skills may be combined; missing skill is a reported capability gap
+skills:
+  - id: prod-sdlc-factory
+    path: .agents/skills/prod-sdlc-factory/SKILL.md
+    use_when: any meaningful SDLC workflow, request to use the factory, resume, or choose lifecycle route
+  - id: github-workflow
+    path: .agents/skills/github-workflow/SKILL.md
+    use_when: repository metadata, issues, pull requests, Actions/CI, releases, branch protection, remote GitHub actions
+  - id: git-workflow
+    path: .agents/skills/git-workflow/SKILL.md
+    use_when: inspect/change branches, diffs, commits, merges, conflicts or repository state
+  - id: tdd-and-testing
+    path: .agents/skills/tdd-and-testing/SKILL.md
+    use_when: plan/implement tests, run QA, debug test failures, or design verification gates
+  - id: security-engineering
+    path: .agents/skills/security-engineering/SKILL.md
+    use_when: security-sensitive code, auth, secrets, trust boundaries, security review, protected data
+  - id: architecture-design
+    path: .agents/skills/architecture-design/SKILL.md
+    use_when: new architecture, material structural changes, services, boundaries or system diagrams
+  - id: api-design
+    path: .agents/skills/api-design/SKILL.md
+    use_when: API/event contracts, requests/responses, compatibility, auth, validation
+  - id: database-engineering
+    path: .agents/skills/database-engineering/SKILL.md
+    use_when: schema, queries, migrations, transaction/data-integrity behavior
+  - id: java-engineering
+    path: .agents/skills/java-engineering/SKILL.md
+    use_when: task modifies/reviews/plans Java code
+  - id: spring-boot-engineering
+    path: .agents/skills/spring-boot-engineering/SKILL.md
+    use_when: Spring/Spring Boot code, configuration, controllers, persistence, messaging or tests
+  - id: python-engineering
+    path: .agents/skills/python-engineering/SKILL.md
+    use_when: task modifies/reviews/plans Python code
+  - id: go-engineering
+    path: .agents/skills/go-engineering/SKILL.md
+    use_when: task modifies/reviews/plans Go code
+  - id: rust-engineering
+    path: .agents/skills/rust-engineering/SKILL.md
+    use_when: task modifies/reviews/plans Rust code
+  - id: react-engineering
+    path: .agents/skills/react-engineering/SKILL.md
+    use_when: task modifies/reviews/plans React code
+  - id: rabbitmq-engineering
+    path: .agents/skills/rabbitmq-engineering/SKILL.md
+    use_when: queue/consumer/producer/message schema, retry, delivery or RabbitMQ integration behavior
+  - id: release-readiness
+    path: .agents/skills/release-readiness/SKILL.md
+    use_when: release readiness review; does not imply permission to deploy

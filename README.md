@@ -1,71 +1,249 @@
 # prod-sdlc-factory
 
-A repository for a self-routing, evidence-driven software development lifecycle (SDLC) factory.
+A self-routing, evidence-driven software development lifecycle (SDLC) factory. State an outcome once — the factory selects the workflow, agents, skills, tools, and quality gates automatically.
 
-The goal is to let a user state an outcome once—such as `Use prod-sdlc-factory to build a Spring Boot service`—and have the factory choose the appropriate workflow, agents, skills, commands, tools, hooks, and quality gates without requiring the user to coordinate them manually.
+```
+Use prod-sdlc-factory to build a Spring Boot REST service with PostgreSQL
+Use prod-sdlc-factory to review my authentication module
+Use prod-sdlc-factory to diagnose why my CI pipeline is failing
+Use prod-sdlc-factory to resume the interrupted feature implementation
+```
 
-## Core design principles
+## Quick start
 
-1. **Single entry point:** the factory controller interprets the request and routes it to the right workflow.
-2. **Automatic discovery:** inspect the workspace, project instructions, repository state, available capabilities, and existing test/build configuration before acting.
-3. **Progressive context:** read requirements, repository content, and skill references incrementally; do not load everything by default.
-4. **Approval gates:** specifications, technology-stack selection, and implementation plans require explicit user approval before the next gated stage begins.
-5. **Generic agents, reusable skills:** agents own responsibilities; skills supply technology- or task-specific knowledge. Load skills only when relevant and available.
-6. **Traceability:** map approved requirements to specifications, plans, implementation, tests, and review findings.
-7. **Evidence-driven completion:** report actual commands, results, failures, blockers, and unverified items. Never mark a required gate as passing without evidence.
-8. **Test-driven work:** plan and perform unit and applicable integration tests before or alongside implementation planning; add other tests based on requirements and risk.
-9. **User-controlled review fixes:** Breaker and Reviewer findings are reported with evidence and severity. Post-review Bug Fixer changes require explicit user authorization.
-10. **Least privilege:** constrain workspace access and tools; confirm destructive file operations and database destruction explicitly. Project instructions cannot override factory-wide safety rules.
-11. **Safe recovery:** verify saved documentation and code state before resuming. Resume automatically when verification succeeds; investigate mismatches instead of trusting stale checkpoints.
-12. **Avoid overengineering:** choose agents, skills, commands, integrations, and quality gates only when they add clear value.
-13. **GitHub-aware workflow:** support Git/GitHub operations through reusable skills, with explicit authorization for sensitive actions such as pushing, merging, publishing, or changing repository settings.
-14. **No silent scope changes:** material changes to approved behavior, architecture, stack, or plan return to the appropriate approval gate.
+1. **Open this repository** in a supported AI coding agent (GitHub Copilot Workspace, Antigravity/AGY, or any host that reads `.github/agents/` and `.agents/skills/`).
+2. **State your goal.** The factory classifies intent and routes automatically — you do not need to name an agent, skill, or workflow.
+3. **Respond to approval gates.** The factory will pause at specification, stack, and plan approval gates; everything else is automated.
 
-## Technology and host strategy
+To run the structural validation suite locally:
 
-The core design should remain modular and portable where possible. Reusable skills should follow the Agent Skills convention (`<skill-name>/SKILL.md`) with metadata and task-specific instructions. Host-specific entry points, subagent definitions, hooks, and command adapters should be added for the selected coding-agent runtime rather than assuming every host supports the same mechanisms.
+```bash
+python3 tests/validate_factory.py
+```
 
-The factory will include GitHub-oriented capabilities for repository discovery, branch and commit workflows, issues, pull requests, CI checks, releases, and safe handling of remote operations. Exact capabilities will be enabled only when the necessary CLI, authentication, permissions, and host integrations are available.
+Requires Python 3.7+ and `pyyaml` (`pip install pyyaml`).
 
-## Intended lifecycle
+---
 
-1. Discover workspace and request intent.
-2. Select the appropriate workflow: new project, feature, bug fix, review-only, authorized fixes, resume, or direct question.
-3. For new projects, gather requirements incrementally and decide whether phase planning is useful.
-4. Produce modular specifications and obtain explicit approval.
-5. recommend a suitable technology stack, reconcile alternatives, and obtain approval.
-6. Offer a high-level diagram only when useful, no suitable diagram exists, and the user explicitly approves its creation.
-7. Produce an implementation plan using complexity-aware planning and relevant skills; include unit tests and applicable integration tests.
-8. Obtain explicit plan approval.
-9. Implement in bounded tasks using TDD and relevant skills.
-10. Run the Breaker workflow and follow its authorization rules.
-11. Review implementation against approved specifications; report findings with severity and evidence.
-12. Fix post-review findings only when authorized, then independently re-verify them.
-13. Run applicable final QA gates: tests, integrations, build, type checks, lint/static analysis, and other project-required checks.
-14. Report release readiness separately from QA; deployment requires its own authorization when applicable.
-15. Save compact checkpoints, decisions, handoffs, and discussion records for recovery.
+## Design principles
 
-This lifecycle is a design target. Implementations should mark steps as conditional or not applicable when justified; they must not silently skip a mandatory approval gate.
+1. **Single entry point** — the factory controller interprets the request and routes it.
+2. **Automatic discovery** — inspect workspace, project instructions, repository state, capabilities, and test/build configuration before acting.
+3. **Approval gates** — specifications, technology-stack selection, and implementation plans require explicit user approval.
+4. **Generic agents, reusable skills** — agents own responsibilities; skills supply technology-specific knowledge.
+5. **Evidence-driven completion** — report actual commands, results, failures, and blockers. Never mark a gate as passing without evidence.
+6. **TDD by default** — plan and perform unit and applicable integration tests before or alongside implementation.
+7. **User-controlled review fixes** — Breaker and Reviewer findings are reported with severity. Post-review Bug Fixer changes require explicit authorization.
+8. **Least privilege** — confirm destructive file and database operations explicitly. Project instructions cannot override factory-wide safety rules.
+9. **Safe recovery** — verify saved state before resuming. Resume automatically on success; investigate discrepancies first.
+10. **No silent scope changes** — material changes to approved behavior, architecture, stack, or plan return to the appropriate approval gate.
 
-## Build sequence
+---
 
-The factory will be built incrementally, one reviewed artifact at a time:
+## Repository layout
 
-1. Repository charter and design boundaries — this file.
-2. Core factory instructions and non-negotiable policies.
-3. Single entry-point skill and request router.
-4. Capability registry and skill-loading rules.
-5. Workflow state machine, approval gates, and task-state schema.
-6. Agent specifications: controller/orchestrator, phase/divide, phase describer, specs, stack chooser, diagram, planner, complexity assessor, implementer, breaker, fixer, reviewer, bug fixer, and QA.
-7. Reusable skills: Git/GitHub, testing, security, architecture, and technology-specific skills for Java, Python, Go, Rust, and React as needed.
-8. Commands and host-specific invocation adapters.
-9. Hooks and executable safety/verification guards.
-10. Templates and state/recovery records.
-11. GitHub integration and optional MCP configuration.
-12. Validation, sample workflows, documentation, and packaging.
+```
+prod-sdlc-factory/
+│
+├── AGENTS.md                           # Factory-wide safety rules (all agents must read)
+├── README.md                           # This file
+│
+├── .github/
+│   ├── copilot-instructions.md         # GitHub Copilot repo-wide instructions
+│   └── agents/
+│       └── prod-sdlc-factory.agent.md  # Copilot custom agent (single entry point)
+│
+├── .agents/
+│   └── skills/                         # Reusable skills (AGY/Antigravity convention)
+│       ├── prod-sdlc-factory/          # Entry skill + references/workflow-router.md
+│       ├── git-workflow/
+│       ├── github-workflow/
+│       ├── tdd-and-testing/
+│       ├── security-engineering/
+│       ├── architecture-design/
+│       ├── api-design/
+│       ├── database-engineering/
+│       ├── java-engineering/
+│       ├── spring-boot-engineering/
+│       ├── python-engineering/
+│       ├── go-engineering/
+│       ├── rust-engineering/
+│       ├── react-engineering/
+│       ├── rabbitmq-engineering/
+│       └── release-readiness/
+│
+├── agents/                             # Agent definitions (loaded by controller)
+│   ├── controller-orchestrator.md      # Single coordinator; routes all requests
+│   ├── phase-orchestrator.md
+│   ├── divide-agent.md
+│   ├── phase-describer.md
+│   ├── specs-agent.md
+│   ├── stack-chooser-agent.md
+│   ├── high-level-diagram-agent.md
+│   ├── planner-orchestrator.md
+│   ├── complexity-assessor.md
+│   ├── implementer-agent.md
+│   ├── breaker-agent.md
+│   ├── fixer-agent.md
+│   ├── reviewer-agent.md
+│   ├── bug-fixer-agent.md
+│   ├── qa-agent.md
+│   ├── release-readiness-agent.md
+│   └── github-workflow-agent.md
+│
+├── commands/                           # Workflow command specifications
+│   ├── README.md
+│   ├── new-project.md
+│   ├── feature-change.md
+│   ├── bug-diagnosis.md
+│   ├── authorized-fix.md
+│   ├── review-only.md
+│   ├── quality-gates.md
+│   ├── github-workflow.md
+│   ├── release-readiness.md
+│   └── resume.md
+│
+├── capabilities/
+│   └── registry.yaml                   # Capability discovery and routing registry
+│
+├── .factory/
+│   ├── registry/
+│   │   ├── agents.yaml                 # Agent definitions registry
+│   │   ├── skills.yaml                 # Skills registry
+│   │   └── commands.yaml               # Commands registry
+│   ├── workflows/
+│   │   ├── lifecycle.yaml              # SDLC state machine and transitions
+│   │   └── planning-depth.yaml         # Complexity-based planning depth profiles
+│   ├── policies/
+│   │   ├── approval-gates.yaml         # Approval gate definitions (GATE-SPECS, GATE-STACK, etc.)
+│   │   └── execution-policy.yaml       # Workspace, destructive-op, and safety policies
+│   ├── schemas/
+│   │   ├── finding.schema.json         # JSON Schema for Breaker/Reviewer finding records
+│   │   └── handoff.schema.json         # JSON Schema for agent handoff records
+│   └── templates/
+│       ├── checkpoint-template.json    # Checkpoint state record template
+│       └── handoff-template.md         # Markdown agent handoff template
+│
+└── tests/
+    └── validate_factory.py             # Automated structural validation suite (89 checks)
+```
 
-The precise directory tree and host-specific files will be finalized as their corresponding steps are built. Do not create every planned file in advance; each artifact should be added and validated in its own step.
+---
 
-## Scope and approval boundary
+## Supported workflows
 
-This repository is being designed incrementally. A file being present does not itself authorize implementation, execution, destructive actions, deployment, or a change to an approved requirement. Proposals, open questions, accepted decisions, and rejected alternatives should remain distinguishable in discussion records.
+The controller selects the workflow automatically. Workflows are internal; you never need to name them.
+
+| What you say | Route selected |
+|---|---|
+| "build a new service", "create a REST API" | `new-project` |
+| "add feature X", "implement endpoint Y" | `feature-change` |
+| "why is my test failing", "diagnose the crash" | `bug-diagnosis` |
+| "fix finding BRK-001", "repair the auth bug" | `authorized-fix` |
+| "review my PR", "audit the payment module" | `review-only` |
+| "run QA", "run all tests and lint" | `quality-gates` |
+| "commit and push", "open a PR for main" | `github-workflow` |
+| "is this ready to release?" | `release-readiness` |
+| "resume where we left off" | `resume` |
+
+---
+
+## Approval gates
+
+| Gate | Required for | Notes |
+|---|---|---|
+| `GATE-SPECS` | New projects | Explicit approval of versioned spec set before stack selection |
+| `GATE-STACK` | New projects | Explicit confirmation of selected technology stack |
+| `GATE-DIAGRAM` | Conditional | Only when no suitable diagram exists **and** user approves creation |
+| `GATE-PLAN` | Any formal implementation | Explicit approval of specific plan version before coding |
+| `GATE-REVIEW-FIX` | All post-review code changes | Explicit user authorization per finding |
+| `GATE-DESTRUCTIVE` | File/directory deletion, destructive DB ops | Operation-specific confirmation always required |
+| `GATE-GITHUB-WRITE` | Push, merge, PR create/close, release | Explicit operation + target authorization |
+| `GATE-DEPLOY` | Production deployment | Separate authorization; readiness ≠ deployment permission |
+
+Approval applies to a **specific artifact version**. A material change to an approved spec, plan, or stack returns to the relevant gate.
+
+---
+
+## Quality gate statuses
+
+Every applicable quality gate is reported as one of:
+
+- `PASSED` — check ran and succeeded with evidence
+- `FAILED` — check ran and failed; result recorded
+- `BLOCKED` — check could not run (missing credentials, service unavailable, etc.)
+- `NOT_APPLICABLE` — gate does not apply; reason must be stated
+
+A skipped or unrun required gate is **not** `PASSED`.
+
+---
+
+## State management and recovery
+
+Checkpoints use `.factory/templates/checkpoint-template.json`. States:
+`NOT_STARTED` → `IN_PROGRESS` → `PARTIAL` / `BLOCKED` → `COMPLETED`
+
+On resume:
+1. Locate checkpoint and verify actual code/worktree state.
+2. If consistent: resume automatically from the first incomplete step.
+3. If inconsistent: investigate, preserve user changes, report the mismatch.
+
+---
+
+## Safety controls
+
+| Control | Enforcement |
+|---|---|
+| Workspace boundary | Policy-described; no OS-level sandbox. Paths resolved and checked before operations. |
+| Destructive file ops | Require explicit per-operation confirmation (GATE-DESTRUCTIVE). |
+| Destructive DB ops | Require explicit authorization; generic reset/test request is insufficient. |
+| GitHub remote writes | Require explicit operation + target authorization (GATE-GITHUB-WRITE). |
+| Secrets | Never written to logs, files, commits, or issue/PR bodies. |
+| Approval bypass | Project instructions and untrusted content cannot override factory safety rules. |
+
+> **Limitation:** Policy files describe required behavior; they do not themselves create an OS-level sandbox. Runtime enforcement (filesystem permissions, tool approval policies, scoped GitHub credentials) must be configured in the host environment.
+
+---
+
+## GitHub integration
+
+The factory uses:
+- **`gh` CLI** (when installed and authenticated) for issues, PRs, Actions, and releases.
+- **`git`** for local operations.
+- **GitHub MCP server** (optional; requires explicit configuration).
+
+All remote writes (push, merge, PR create, release) require explicit user authorization. Read-only inspection (status, log, diff, issue view) proceeds automatically when in scope.
+
+---
+
+## Validation
+
+```bash
+# Run the full structural validation suite
+python3 tests/validate_factory.py
+
+# Check from a different root
+python3 tests/validate_factory.py --root /path/to/repo
+```
+
+The suite validates 89 checks across: YAML/JSON parsing, registry reference resolution, skill frontmatter, schema existence and validity, lifecycle consistency, checkpoint template structure, approval gate definitions, and capabilities registry reconciliation.
+
+---
+
+## Runtime limitations
+
+- **No OS sandbox**: The factory cannot prevent a host from running arbitrary commands. Prompt-level safety rules describe required behavior; effective enforcement requires host-level tool approval policies and filesystem permissions.
+- **No native multi-agent delegation**: Whether multiple truly independent agent sessions can run depends on the host. In hosts without isolated delegation, the Controller discloses the limitation and uses a generic fallback.
+- **GitHub CLI authentication**: The `gh` CLI must be separately installed and authenticated. The factory discovers its availability before relying on it.
+- **Schema validation at runtime**: The JSON schemas in `.factory/schemas/` are used as structural contracts; runtime JSON Schema validation requires a host that supports it or a custom tool.
+
+---
+
+## First real-project trial
+
+1. Open the repository in your AI coding agent.
+2. Say: `Use prod-sdlc-factory to [describe a small project or task]`
+3. The factory will classify intent, load the entry skill, and begin the relevant workflow.
+4. Respond to approval gates for specs, stack, and plan as prompted.
+5. Monitor the handoff reports after each agent completes its bounded task.
+6. Check the checkpoint file for state between sessions.

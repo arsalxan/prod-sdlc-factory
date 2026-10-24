@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "finding.schema.json",
+  "title": "Finding",
+  "description": "A structured finding record produced by the Breaker or Reviewer agent. Every finding must have a stable ID, category, severity, confidence, and status.",
+  "type": "object",
+  "required": ["id", "title", "category", "severity", "confidence", "status", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable, unique finding identifier. Example: BRK-001, REV-003.",
+      "pattern": "^[A-Z]{2,6}-[0-9]{1,6}$"
+    },
+    "title": {
+      "type": "string",
+      "description": "Concise, specific description of the finding.",
+      "minLength": 5
+    },
+    "category": {
+      "type": "string",
+      "description": "Finding category.",
+      "enum": [
+        "CONFIRMED_DEFECT",
+        "SPEC_MISMATCH",
+        "SECURITY_RISK",
+        "DATA_INTEGRITY",
+        "REGRESSION",
+        "TEST_GAP",
+        "MAINTAINABILITY",
+        "UNCERTAIN",
+        "SUGGESTION"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "description": "Impact severity if the finding is real.",
+      "enum": ["Critical", "High", "Medium", "Low", "Informational"]
+    },
+    "confidence": {
+      "type": "string",
+      "description": "Strength of evidence that the finding is valid.",
+      "enum": ["HIGH", "MEDIUM", "LOW", "UNASSESSED"]
+    },
+    "status": {
+      "type": "string",
+      "description": "Current lifecycle status of the finding.",
+      "enum": [
+        "OPEN",
+        "AUTHORIZED_FOR_FIX",
+        "IN_PROGRESS",
+        "VERIFIED_FIXED",
+        "DEFERRED",
+        "ACCEPTED",
+        "REJECTED",
+        "DUPLICATE",
+        "BLOCKED"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "description": "Short, plain-language summary of the issue."
+    },
+    "requirement_refs": {
+      "type": "array",
+      "description": "References to approved specification requirements or acceptance criteria affected.",
+      "items": { "type": "string" }
+    },
+    "affected_files": {
+      "type": "array",
+      "description": "Relative paths to affected source files.",
+      "items": { "type": "string" }
+    },
+    "evidence": {
+      "type": "string",
+      "description": "Command output, test results, log excerpts, or code references supporting the finding. Redact secrets."
+    },
+    "reproduction_steps": {
+      "type": "string",
+      "description": "Step-by-step instructions to reproduce the finding, including preconditions."
+    },
+    "expected_behavior": {
+      "type": "string",
+      "description": "What should happen according to approved specifications or accepted behavior."
+    },
+    "observed_behavior": {
+      "type": "string",
+      "description": "What actually happens."
+    },
+    "impact": {
+      "type": "string",
+      "description": "Consequence to users, data, security, or system stability if the finding is real."
+    },
+    "recommended_action": {
+      "type": "string",
+      "description": "Suggested next step: fix, defer, investigate, accept, or reject."
+    },
+    "code_identity": {
+      "type": "object",
+      "description": "Repository state at the time the finding was recorded.",
+      "properties": {
+        "commit": { "type": "string" },
+        "branch": { "type": "string" },
+        "worktree_status": { "type": "string" }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "description": "User authorization record. Only set when the Controller confirms explicit user authorization.",
+      "properties": {
+        "authorized_by": { "type": "string" },
+        "authorized_at": { "type": "string", "format": "date-time" },
+        "scope": { "type": "string" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "description": "Independent re-verification result after a fix is applied.",
+      "properties": {
+        "verified_by": { "type": "string", "enum": ["breaker-agent", "reviewer-agent", "qa-agent"] },
+        "verified_at": { "type": "string", "format": "date-time" },
+        "evidence": { "type": "string" },
+        "result": { "type": "string", "enum": ["VERIFIED_FIXED", "STILL_OPEN", "PARTIAL", "BLOCKED"] }
+      }
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this finding was first recorded."
+    },
+    "source_agent": {
+      "type": "string",
+      "description": "Agent that produced this finding.",
+      "enum": ["breaker-agent", "reviewer-agent", "qa-agent"]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+version: 1
+gates:
+  GATE-SPECS:
+    required_for: new_project
+    approval: explicit_user_approval_of_versioned_complete_spec_set
+    on_change: material_requirement_change_requires_reapproval
+  GATE-STACK:
+    required_for: new_project
+    approval: explicit_confirmation_of_selected_stack
+    on_alternative: compare_stack_tradeoffs_fairly_then_confirm
+  GATE-DIAGRAM:
+    required_when: no_suitable_current_diagram_or_current_diagram_is_materially_stale
+    approval: explicit_user_approval_before_create_or_update
+    decline: skip_diagram_stage
+  GATE-PLAN:
+    required_for: any_formal_implementation_plan_before_execution
+    approval: explicit_user_approval_of_specific_plan_version
+    on_change: material_plan_change_requires_reapproval
+  GATE-REVIEW-FIX:
+    required_for: all_post_review_code_fixes
+    approval: explicit_user_authorization_of_finding_or_fix_scope
+  GATE-DESTRUCTIVE:
+    required_for: any_file_or_directory_deletion_and_destructive_database_operation
+    approval: explicit_operation_specific_confirmation
+  GATE-GITHUB-WRITE:
+    required_for: push_merge_remote_comment_issue_close_repo_settings_publish_release_or_similar_remote_write
+    approval: explicit_operation_and_target_authorization_unless_exact_action_was_clearly_requested
+  GATE-DEPLOY:
+    required_for: deployment_or_production_publication
+    approval: separate_explicit_authorization

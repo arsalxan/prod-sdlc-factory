@@ -1,0 +1,30 @@
+version: 1
+routing_policy: controller selects automatically based on user intent and discovered project state
+commands:
+  - id: new-project
+    source: commands/new-project.md
+    trigger: new application/service with requirements not yet defined
+  - id: feature-change
+    source: commands/feature-change.md
+    trigger: new feature in an existing repository
+  - id: bug-diagnosis
+    source: commands/bug-diagnosis.md
+    trigger: bug/test/CI failure investigation where fix is not yet authorized
+  - id: authorized-fix
+    source: commands/authorized-fix.md
+    trigger: user explicitly requests bounded issue fix
+  - id: review-only
+    source: commands/review-only.md
+    trigger: read-only review/audit
+  - id: quality-gates
+    source: commands/quality-gates.md
+    trigger: tests/build/type/lint/static analysis/final QA
+  - id: github-workflow
+    source: commands/github-workflow.md
+    trigger: repository, issue, PR, Actions/CI, GitHub write or release task
+  - id: release-readiness
+    source: commands/release-readiness.md
+    trigger: release-readiness request
+  - id: resume
+    source: commands/resume.md
+    trigger: continue saved work/checkpoint

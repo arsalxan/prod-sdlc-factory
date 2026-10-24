@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "handoff.schema.json",
+  "title": "AgentHandoff",
+  "description": "Structured handoff record returned by any specialist agent to the Controller after completing or stopping on a bounded task.",
+  "type": "object",
+  "required": ["task_id", "owner_agent", "status", "scope", "work_performed", "files_changed", "acceptance_criteria_results", "verification_evidence", "next_action"],
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Unique identifier for the bounded task this handoff covers."
+    },
+    "owner_agent": {
+      "type": "string",
+      "description": "ID of the agent that performed the work.",
+      "enum": [
+        "controller-orchestrator",
+        "phase-orchestrator",
+        "divide-agent",
+        "phase-describer",
+        "specs-agent",
+        "stack-chooser-agent",
+        "high-level-diagram-agent",
+        "planner-orchestrator",
+        "complexity-assessor",
+        "implementer-agent",
+        "breaker-agent",
+        "fixer-agent",
+        "reviewer-agent",
+        "bug-fixer-agent",
+        "qa-agent",
+        "release-readiness-agent",
+        "github-workflow-agent"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "description": "Final status of the task.",
+      "enum": ["NOT_STARTED", "IN_PROGRESS", "PARTIAL", "BLOCKED", "COMPLETED"]
+    },
+    "scope": {
+      "type": "string",
+      "description": "The bounded work assigned to this agent and the plan/spec version it relates to."
+    },
+    "approved_plan_version": {
+      "type": "string",
+      "description": "Identifier or description of the approved plan version governing this task, if applicable."
+    },
+    "code_identity": {
+      "type": "object",
+      "description": "Repository state when this handoff was produced.",
+      "properties": {
+        "commit": { "type": "string" },
+        "branch": { "type": "string" },
+        "worktree_status": { "type": "string" }
+      }
+    },
+    "work_performed": {
+      "type": "string",
+      "description": "Narrative summary of what was done in this task."
+    },
+    "files_changed": {
+      "type": "array",
+      "description": "Relative paths of files created, modified, or deleted during this task.",
+      "items": { "type": "string" }
+    },
+    "acceptance_criteria_results": {
+      "type": "array",
+      "description": "Per-criterion result mapping requirement to evidence, status, and any unmet reason.",
+      "items": {
+        "type": "object",
+        "required": ["criterion", "status"],
+        "properties": {
+          "criterion": { "type": "string" },
+          "status": { "type": "string", "enum": ["MET", "UNMET", "PARTIAL", "NOT_VERIFIED", "BLOCKED"] },
+          "evidence": { "type": "string" },
+          "unmet_reason": { "type": "string" }
+        }
+      }
+    },
+    "verification_evidence": {
+      "type": "array",
+      "description": "Records of checks, tests, or inspections performed.",
+      "items": {
+        "type": "object",
+        "required": ["procedure", "status"],
+        "properties": {
+          "procedure": { "type": "string" },
+          "command": { "type": "string" },
+          "status": { "type": "string", "enum": ["PASSED", "FAILED", "BLOCKED", "NOT_APPLICABLE"] },
+          "result_summary": { "type": "string" },
+          "code_identity": { "type": "string" },
+          "blocked_reason": { "type": "string" }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "description": "Finding IDs produced or referenced in this handoff. Full records are in the finding registry.",
+      "items": { "type": "string" }
+    },
+    "assumptions": {
+      "type": "string",
+      "description": "Assumptions made during this task that have not been verified or approved."
+    },
+    "risks": {
+      "type": "string",
+      "description": "Residual risks or open concerns the Controller should be aware of."
+    },
+    "blockers": {
+      "type": "array",
+      "description": "Current blockers preventing full completion.",
+      "items": {
+        "type": "object",
+        "required": ["blocker", "impact"],
+        "properties": {
+          "blocker": { "type": "string" },
+          "impact": { "type": "string" },
+          "resolution_needed": { "type": "string" }
+        }
+      }
+    },
+    "approval_needed": {
+      "type": "string",
+      "description": "Description of any approval gate that must be satisfied before this work can proceed."
+    },
+    "next_action": {
+      "type": "string",
+      "description": "Recommended next step for the Controller."
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this handoff record was produced."
+    }
+  }
+}

@@ -1,0 +1,142 @@
+version: 1
+purpose: >-
+  Select the amount of planning detail for each bounded implementation task using
+  the Complexity Assessor's evidence-based complexity, uncertainty, and risk results.
+principles:
+  - assess_each_bounded_task_independently
+  - complexity_uncertainty_and_impact_are_separate_dimensions
+  - choose_the_lightest_planning_depth_that_controls_the_evidenced_risk
+  - planning_profiles_are_modes_not_new_agent_types
+  - do_not_invent_or_create_specialist_agents_automatically
+  - preserve_approved_specs_stack_architecture_and_acceptance_criteria
+  - require_explicit_plan_approval_before_implementation
+  - include_unit_tests_and_applicable_integration_tests_before_code
+  - load_relevant_existing_skills_on_demand
+  - missing_skills_or_unknowns_must_be_reported_not_fabricated
+
+assessment_inputs:
+  required:
+    - bounded_task_and_acceptance_criteria
+    - complexity_band
+    - uncertainty_band
+    - risk_impact_band
+    - evidence_and_assumptions
+    - affected_components_and_dependencies
+    - applicable_technology_stack
+  optional:
+    - relevant_repository_code
+    - existing_test_and_ci_configuration
+    - architecture_or_runbook_references
+
+bands:
+  complexity: [LOW, MEDIUM, HIGH, VERY_HIGH]
+  uncertainty: [LOW, MEDIUM, HIGH, VERY_HIGH]
+  risk_impact: [LOW, MEDIUM, HIGH, CRITICAL]
+
+planning_profiles:
+  lightweight:
+    select_when:
+      all_conditions:
+        - complexity_is_LOW
+        - uncertainty_is_LOW
+        - risk_impact_is_LOW
+        - task_is_localized_and_well_understood
+        - no_material_contract_data_security_or_shared_component_change
+    planning_requirements:
+      - state_task_outcome_and_spec_traceability
+      - list_concise_implementation_steps
+      - identify_direct_dependencies_and_one_owner
+      - define_unit_tests_and_integration_tests_if_a_real_boundary_applies
+      - list_relevant_regression_checks_and_existing_quality_gates
+      - state_definition_of_done_and_recovery_note_if_needed
+    delegation:
+      default: no_additional_planning_delegate
+      allow_when: a_specific_information_gap_or_independent_check_justifies_it
+
+  standard:
+    select_when:
+      any_condition:
+        - complexity_is_MEDIUM
+        - uncertainty_is_MEDIUM
+        - risk_impact_is_MEDIUM
+        - multiple_components_or_nontrivial_edge_cases_are_involved
+    planning_requirements:
+      - map_task_to_specs_and_acceptance_criteria
+      - list_ordered_steps_and_dependencies
+      - identify_affected_components_contracts_and_data
+      - design_unit_tests_and_applicable_integration_tests_before_implementation
+      - identify_regression_and_relevant_static_or_build_checks
+      - note_assumptions_failure_modes_and_recovery_considerations
+      - define_test_evidence_required_for_each_gate
+    delegation:
+      default: delegate_only_bounded_work_with_clear_independent_value
+      allow_when: domain_expertise_parallel_analysis_or_independent_check_reduces_risk
+
+  detailed:
+    select_when:
+      any_condition:
+        - complexity_is_HIGH_or_VERY_HIGH
+        - uncertainty_is_HIGH_or_VERY_HIGH
+        - risk_impact_is_HIGH_or_CRITICAL
+        - shared_fragile_code_or_backward_compatibility_is_affected
+        - security_privacy_data_integrity_concurrency_or_distributed_behavior_is_material
+        - cross_service_integration_schema_migration_or_public_contract_changes
+    planning_requirements:
+      - include_all_standard_profile_requirements
+      - analyze_failure_modes_and_edge_cases_explicitly
+      - map_cross_component_contracts_and_integration_boundaries
+      - plan_unit_integration_and_other_risk_justified_tests
+      - assess_data_migration_backward_compatibility_and_rollback_when_relevant
+      - define_observability_operational_and_deployment_checks_when_relevant
+      - identify_open_questions_and_evidence_needed_to_resolve_them
+      - identify_parallelizable_work_and_single_owners_for_shared_components
+      - define_reassessment_triggers_and_recovery_points
+      - report_residual_risks_and_explicitly_unverified_assumptions
+    delegation:
+      default: use_specialist_or_independent_planning_help_when_available_and_useful
+      allow_when: a_bounded_subtask_needs_distinct_expertise_or_independent_analysis
+      constraints:
+        - each_delegate_receives_minimum_sufficient_context
+        - do_not_send_the_entire_project_by_default
+        - verify_and_consolidate_handoffs_before_finalizing_plan
+        - do_not_assume_a_specialist_agent_exists_if_registry_has_no_definition
+
+selection_precedence:
+  - if_any_dimension_is_HIGH_OR_ABOVE_choose_detailed
+  - else_if_all_dimensions_are_LOW_and_task_is_localized_choose_lightweight
+  - otherwise_choose_standard
+  - if_evidence_is_insufficient_choose_a_provisional_profile_and_raise_uncertainty
+  - a_high_impact_protected_operation_requires_the_existing_authorization_policy_regardless_of_profile
+
+skill_loading:
+  rule: load_only_relevant_existing_skills_for_the_bounded_task
+  examples:
+    - [java-engineering, spring-boot-engineering, tdd-and-testing]
+    - [react-engineering, api-design, tdd-and-testing]
+    - [github-workflow, git-workflow]
+    - [database-engineering, security-engineering, tdd-and-testing]
+  note: examples_are_not_mandatory_bundles; select_skills_from_actual_task_needs
+
+reassessment_triggers:
+  - observed_code_coupling_differs_materially_from_plan
+  - new_or_undocumented_integration_is_found
+  - public_contract_schema_or_migration_scope_changes
+  - new_security_data_integrity_or_production_risk_is_discovered
+  - required_tests_or_quality_gates_are_missing_or_unavailable
+  - a_plan_assumption_is_disproved
+
+planner_output_requirements:
+  - selected_planning_profile_and_rationale
+  - complexity_uncertainty_and_risk_evidence
+  - task_breakdown_dependencies_and_owners
+  - requirement_and_acceptance_criteria_traceability
+  - unit_and_applicable_integration_test_plan
+  - other_applicable_quality_gates_and_expected_evidence
+  - relevant_skills_to_load_during_execution
+  - assumptions_open_questions_and_residual_risks
+  - versioned_plan_for_explicit_user_approval
+
+approval:
+  gate: WAITING_FOR_PLAN_APPROVAL
+  implementation_allowed_only_after: explicit_approval_of_current_plan_version
+  material_plan_change_after_approval: return_to_user_for_reapproval

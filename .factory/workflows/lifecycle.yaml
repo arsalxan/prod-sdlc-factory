@@ -1,0 +1,98 @@
+version: 1
+states:
+  - DISCOVERY
+  - REQUIREMENTS
+  - PHASES_OPTIONAL
+  - SPECS_DRAFT
+  - WAITING_FOR_SPECS_APPROVAL
+  - STACK_DRAFT
+  - WAITING_FOR_STACK_APPROVAL
+  - DIAGRAM_CONDITIONAL
+  - PLAN_DRAFT
+  - WAITING_FOR_PLAN_APPROVAL
+  - IMPLEMENTATION
+  - BREAKER_REVIEW
+  - WAITING_FOR_BREAKER_FIX_DECISIONS
+  - SPEC_REVIEW
+  - WAITING_FOR_REVIEW_FIX_AUTHORIZATION
+  - AUTHORIZED_FIXES
+  - FINAL_QA
+  - RELEASE_READINESS_OPTIONAL
+  - COMPLETE
+  - BLOCKED
+  - RESUME_VERIFICATION
+routing:
+  - from: DISCOVERY
+    to: REQUIREMENTS
+    when: new_project_route
+  - from: REQUIREMENTS
+    to: PHASES_OPTIONAL
+    when: phased_delivery_may_help
+  - from: PHASES_OPTIONAL
+    to: SPECS_DRAFT
+    when: user_decision_recorded_or_phases_skipped
+  - from: SPECS_DRAFT
+    to: WAITING_FOR_SPECS_APPROVAL
+  - from: WAITING_FOR_SPECS_APPROVAL
+    to: STACK_DRAFT
+    when: explicit_approval_of_current_spec_version
+  - from: STACK_DRAFT
+    to: WAITING_FOR_STACK_APPROVAL
+  - from: WAITING_FOR_STACK_APPROVAL
+    to: DIAGRAM_CONDITIONAL
+    when: explicit_confirmation_of_selected_stack
+  - from: DIAGRAM_CONDITIONAL
+    to: PLAN_DRAFT
+    when: suitable_diagram_reused_or_creation_approved_or_diagram_skipped_by_user
+  - from: PLAN_DRAFT
+    to: WAITING_FOR_PLAN_APPROVAL
+  - from: WAITING_FOR_PLAN_APPROVAL
+    to: IMPLEMENTATION
+    when: explicit_approval_of_current_plan_version
+  - from: IMPLEMENTATION
+    to: BREAKER_REVIEW
+    when: bounded_implementation_unit_has_verification_evidence
+  - from: BREAKER_REVIEW
+    to: WAITING_FOR_BREAKER_FIX_DECISIONS
+    when: findings_exist
+  - from: BREAKER_REVIEW
+    to: SPEC_REVIEW
+    when: no_findings_in_tested_scope_or_scope_complete
+  - from: WAITING_FOR_BREAKER_FIX_DECISIONS
+    to: AUTHORIZED_FIXES
+    when: user_authorizes_one_or_more_findings
+  - from: AUTHORIZED_FIXES
+    to: BREAKER_REVIEW
+    when: reverify_authorized_fixes
+  - from: WAITING_FOR_BREAKER_FIX_DECISIONS
+    to: SPEC_REVIEW
+    when: user_declines_or_defers_findings_and_decision_is_recorded
+  - from: SPEC_REVIEW
+    to: WAITING_FOR_REVIEW_FIX_AUTHORIZATION
+    when: reviewer_findings_exist
+  - from: SPEC_REVIEW
+    to: FINAL_QA
+    when: no_review_findings_in_scope
+  - from: WAITING_FOR_REVIEW_FIX_AUTHORIZATION
+    to: AUTHORIZED_FIXES
+    when: user_explicitly_authorizes_specific_review_findings
+  - from: AUTHORIZED_FIXES
+    to: SPEC_REVIEW
+    when: reviewer_rechecks_authorized_review_fixes
+  - from: WAITING_FOR_REVIEW_FIX_AUTHORIZATION
+    to: FINAL_QA
+    when: user_declines_or_defers_findings_and_decision_is_recorded
+  - from: FINAL_QA
+    to: RELEASE_READINESS_OPTIONAL
+    when: release_readiness_is_requested_or_in_scope
+  - from: FINAL_QA
+    to: COMPLETE
+    when: applicable_qa_results_reported_and_no_more_required_stage
+  - from: RELEASE_READINESS_OPTIONAL
+    to: COMPLETE
+    when: readiness_result_reported_deployment_not_implied
+recovery:
+  state: RESUME_VERIFICATION
+  verify: [checkpoint_schema, repository_identity, worktree, approved_artifact_versions, docs, code, test_evidence]
+  success: resume_automatically
+  mismatch: investigate_preserve_user_changes_and_ask_only_for_real_blocker_or_required_approval

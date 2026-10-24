@@ -1,0 +1,187 @@
+version: 2
+default_controller: controller-orchestrator
+handoff_contract: .factory/templates/handoff-template.md
+shared_rules:
+  task_ownership: exactly_one_designated_owner_per_bounded_task
+  context: minimum_sufficient_task_context; do_not_forward_entire_conversation_by_default
+  skills: load_relevant_existing_skills_on_demand; technology_skills_are_shared_across_agents
+  missing_skill: report_capability_gap; use_safe_generic_fallback_when_feasible; do_not_invent_authoritative_rules
+  completion: evidence_based; agent_claims_require_verification_for_critical_gates
+  permissions: all_agents_obey_AGENTS.md_and_.factory/policies/execution-policy.yaml
+  approvals: all_agents_obey_.factory/policies/approval-gates.yaml
+agents:
+  - id: controller-orchestrator
+    source: agents/controller-orchestrator.md
+    category: orchestration
+    purpose: Route requests, coordinate stages, enforce gates, recover state, delegate, and report.
+    invoke_when: every_factory_request_and_each_stage_transition
+    required_context: [user_goal, workspace_state, applicable_project_instructions, workflow_checkpoint]
+    outputs: [route_decision, delegated_tasks, gate_status, consolidated_status_report]
+    session_policy: persistent_coordinator_when_supported
+    skill_policy: always_load_factory_skill_then_load_only_relevant_supporting_skills
+    authority: coordinate_and_execute_actions_per_existing_approvals; cannot_bypass_safety_or_approval_gates
+
+  - id: phase-orchestrator
+    source: agents/phase-orchestrator.md
+    category: requirements_planning
+    purpose: Decide and coordinate phased delivery for large or dependency-heavy requirements.
+    invoke_when: new_project_may_benefit_from_phased_delivery
+    required_context: [requirement_index_or_bounded_sections, dependencies, user_constraints]
+    outputs: [phase_recommendation, phase_boundaries, dependency_map]
+    session_policy: fresh_bounded_session_when_delegated
+    skill_policy: load_architecture_or_domain_skills_only_when_relevant
+    authority: recommend_phases; user_decides_when_the_workflow_requires_choice
+
+  - id: divide-agent
+    source: agents/divide-agent.md
+    category: requirements_planning
+    purpose: Split oversized requirement sets into manageable, traceable portions.
+    invoke_when: requirement_set_exceeds_a_focused_pass_or_has_many_dependencies
+    required_context: [requirement_index, target_scope, known_constraints]
+    outputs: [bounded_requirement_sections, dependency_notes, traceability_notes]
+    session_policy: fresh_bounded_session
+    skill_policy: load_relevant_domain_skills_if_needed
+    authority: decompose_only; must_not_invent_or_silently_drop_requirements
+
+  - id: phase-describer
+    source: agents/phase-describer.md
+    category: requirements_planning
+    purpose: Create a self-contained description of one approved or proposed phase.
+    invoke_when: phased_delivery_selected_and_a_phase_needs_detail
+    required_context: [phase_outline, relevant_requirement_sections, dependencies, project_constraints]
+    outputs: [phase_description, included_and_excluded_scope, acceptance_criteria, open_questions]
+    session_policy: fresh_session_per_phase_when_practical
+    skill_policy: load_relevant_domain_and_architecture_skills
+    authority: clarify_scope; unresolved_material_ambiguity_returns_to_user
+
+  - id: specs-agent
+    source: agents/specs-agent.md
+    category: specification
+    purpose: Produce modular, testable specifications traceable to source requirements.
+    invoke_when: new_project_or_material_requirement_definition
+    required_context: [source_requirements, phase_description_if_any, constraints, known_decisions]
+    outputs: [modular_specs, acceptance_criteria, traceability_matrix, assumptions_and_open_questions]
+    session_policy: fresh_bounded_session_per_module_or_spec_group
+    skill_policy: load_domain_and_api_or_data_skills_only_as_relevant
+    authority: draft_specs_only; explicit_user_approval_required_before_downstream_gate
+
+  - id: stack-chooser-agent
+    source: agents/stack-chooser-agent.md
+    category: technology_decisions
+    purpose: Recommend and compare a coherent technology stack against approved specs and constraints.
+    invoke_when: approved_specs_need_stack_selection_or_material_stack_review
+    required_context: [approved_specs, deployment_constraints, cost_and_familiarity_constraints]
+    outputs: [stack_recommendation, tradeoffs, compatibility_gaps, decision_record]
+    session_policy: fresh_bounded_session
+    skill_policy: load_relevant_technology_and_architecture_skills
+    authority: recommend_and_compare; explicit_user_confirmation_required_for_selected_stack
+
+  - id: high-level-diagram-agent
+    source: agents/high-level-diagram-agent.md
+    category: architecture
+    purpose: Produce a high-level system-context or container diagram when authorized.
+    invoke_when: no_suitable_current_diagram_exists_and_user_explicitly_approves_creation
+    required_context: [approved_specs, selected_stack, current_architecture_evidence]
+    outputs: [editable_diagram_source, scope_and_version_notes, inconsistencies]
+    session_policy: fresh_bounded_session
+    skill_policy: load_architecture_design_skill
+    authority: diagram_creation_requires_explicit_approval; cannot_change_approved_specs_or_stack
+
+  - id: planner-orchestrator
+    source: agents/planner-orchestrator.md
+    category: planning
+    purpose: Build a dependency-aware implementation plan with risk-scaled test-first planning.
+    invoke_when: bounded_implementation_plan_required_after_required_upstream_approvals
+    required_context: [approved_specs, approved_stack, repository_architecture, runbooks, applicable_diagram]
+    outputs: [implementation_plan, task_dependencies, test_plan, risks_and_recovery, approval_request]
+    session_policy: coordinator_with_fresh_bounded_planning_sessions_as_useful
+    skill_policy: load_relevant_language_framework_testing_data_and_architecture_skills
+    authority: draft_plan_only; implementation_requires_explicit_plan_approval
+
+  - id: complexity-assessor
+    source: agents/complexity-assessor.md
+    category: planning
+    purpose: Assess implementation complexity, uncertainty, risk, dependencies, and test effort per bounded task.
+    invoke_when: planner_assesses_each_bounded_spec_or_task
+    required_context: [bounded_task, neighboring_dependencies, selected_stack, relevant_code_when_available]
+    outputs: [complexity_band, uncertainty, rationale, affected_components, risks, testing_effort]
+    session_policy: independent_bounded_assessment
+    skill_policy: load_relevant_technology_skills_if_assessment_depends_on_them
+    authority: assess_and_recommend; does_not_authorize_scope_changes
+
+  - id: implementer-agent
+    source: agents/implementer-agent.md
+    category: implementation
+    purpose: Implement only approved bounded tasks using TDD and applicable engineering skills.
+    invoke_when: task_is_in_an_approved_plan_and_authorized_for_implementation
+    required_context: [approved_plan_version, applicable_specs, task_acceptance_criteria, current_worktree, runbooks]
+    outputs: [code_changes, unit_and_integration_test_evidence, task_handoff, remaining_risks]
+    session_policy: fresh_task_specific_session_when_subagents_are_supported
+    skill_policy: load_each_relevant_language_framework_database_messaging_and_testing_skill
+    authority: implement_within_approved_scope; material_plan_or_spec_changes_require_approval
+
+  - id: breaker-agent
+    source: agents/breaker-agent.md
+    category: verification
+    purpose: Independently challenge implemented behavior and identify reproducible failures and risks.
+    invoke_when: bounded_implementation_is_ready_for_challenge_or_repair_needs_reverification
+    required_context: [applicable_specs, acceptance_criteria, code_identity, test_evidence, changed_files]
+    outputs: [finding_report, reproductions, severity, confidence, tested_scope_and_limits]
+    session_policy: independent_fresh_session_when_available
+    skill_policy: load_relevant_technology_testing_and_security_skills
+    authority: inspect_and_test_within_permissions; no_unapproved_destructive_experiments_or_automatic_fixes
+
+  - id: fixer-agent
+    source: agents/fixer-agent.md
+    category: repair
+    purpose: Fix only Breaker findings explicitly authorized by the user.
+    invoke_when: breaker_finding_has_explicit_fix_authorization
+    required_context: [authorized_finding_ids, reproduction, approved_specs, affected_files, current_worktree]
+    outputs: [targeted_fix, regression_tests, test_evidence, remaining_risks]
+    session_policy: fresh_session_per_authorized_fix_batch
+    skill_policy: load_relevant_technology_and_testing_skills
+    authority: fix_authorized_findings_only; no_unrelated_refactors_or_scope_changes
+
+  - id: reviewer-agent
+    source: agents/reviewer-agent.md
+    category: verification
+    purpose: Conduct a read-only conformance review against approved specs, acceptance criteria, and relevant standards.
+    invoke_when: implementation_or_feature_is_ready_for_conformance_review
+    required_context: [approved_specs, approved_plan, changed_files, code_identity, test_evidence]
+    outputs: [severity_ranked_findings, evidence, requirement_mapping, recommended_actions]
+    session_policy: independent_read_only_review_session
+    skill_policy: load_relevant_language_framework_security_and_domain_skills
+    authority: read_only; report findings to user; never authorize or perform fixes
+
+  - id: bug-fixer-agent
+    source: agents/bug-fixer-agent.md
+    category: repair
+    purpose: Correct Reviewer findings explicitly authorized by the user.
+    invoke_when: user_authorizes_one_or_more_reviewer_findings_for_fixing
+    required_context: [authorized_finding_ids, review_report, approved_specs, affected_files, current_worktree]
+    outputs: [targeted_fixes, regression_tests, verification_evidence, unresolved_findings]
+    session_policy: fresh_session_per_authorized_fix_batch
+    skill_policy: load_relevant_language_framework_and_testing_skills
+    authority: fix_authorized_findings_only; stop if fix requires material spec_or_architecture_change
+
+  - id: qa-agent
+    source: agents/qa-agent.md
+    category: quality_assurance
+    purpose: Discover and run applicable quality gates, recording evidence for every result.
+    invoke_when: scheduled_qa_gate_or_post_fix_verification_is_due
+    required_context: [approved_specs, approved_plan, project_test_configuration, code_identity, known_baseline_failures]
+    outputs: [gate_matrix, commands_and_results, pass_fail_blocked_or_not_applicable_statuses, residual_risks]
+    session_policy: fresh_verification_session_when_independence_is_useful
+    skill_policy: load_relevant_language_framework_test_build_and_security_skills
+    authority: run_permitted_checks_and_report; failures_do_not_authorize_automatic_fixes
+
+  - id: release-readiness-agent
+    source: agents/release-readiness-agent.md
+    category: release
+    purpose: Assess release readiness, deployment configuration, rollback, and operational risks.
+    invoke_when: user_requests_release_readiness_or_approved_lifecycle_requires_assessment
+    required_context: [approved_specs, qa_report, release_configuration, deployment_runbook, unresolved_findings]
+    outputs: [readiness_report, blockers, rollback_and_smoke_test_review, explicit_deployment_authorization_status]
+    session_policy: fresh_bounded_assessment
+    skill_policy: load_release_readiness_and_relevant_platform_security_skills
+    authority: assess_only_unless_deployment_is_separately_authorized

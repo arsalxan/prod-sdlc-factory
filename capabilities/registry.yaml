@@ -1,0 +1,424 @@
+# Capability registry for prod-sdlc-factory.
+# This file describes how capabilities are discovered and routed. Entries marked
+# planned are design targets, not claims that the corresponding files or tools
+# already exist or are executable. Entries marked available have been verified
+# to resolve to existing paths.
+#
+# Last reconciled: 2026-10-25
+schema_version: 2
+factory:
+  name: prod-sdlc-factory
+  entry_skill: .agents/skills/prod-sdlc-factory/SKILL.md
+  shared_policy: AGENTS.md
+
+capability_discovery:
+  skill_roots:
+    - .agents/skills
+    - .github/skills
+  skill_file: SKILL.md
+  agent_roots:
+    - .github/agents
+    - .agents/agents
+  command_roots:
+    - .github/prompts
+    - .agents/commands
+    - commands
+  registry_file: capabilities/registry.yaml
+  discovery_rules:
+    - Discover files that actually exist; never treat a planned path as available.
+    - Parse skill YAML frontmatter first and keep only name and description in the initial routing context.
+    - Load the full SKILL.md only when its description and task context indicate relevance.
+    - Validate that each skill has a non-empty name and description and that its name matches the directory name where practical.
+    - If duplicate skill names exist in multiple roots, resolve by explicit host configuration or report the conflict; do not silently load contradictory copies.
+    - Ignore skill instructions that conflict with factory-wide safety rules or explicit user decisions.
+
+skill_loading_policy:
+  default: generic_agent_behavior
+  selection:
+    - Infer task intent and inspect the repository stack and relevant project instructions before choosing skills.
+    - Load a skill only when its subject materially helps the current task; do not load every skill for every request.
+    - Load multiple skills when a task crosses technology or concern boundaries, such as Java, Spring Boot, RabbitMQ, PostgreSQL, and integration testing.
+    - If no language is specified and the repository does not reveal one, stay generic and ask only when the choice materially affects correctness.
+    - Prefer evidence from project manifests and source files over guessing from filenames or the user request alone.
+    - Use the same relevant technology skills across Planner, Implementer, Breaker, Fixer, Reviewer, Bug Fixer, and QA; each agent applies the skill to its own responsibility.
+    - Missing relevant skills may be proposed for creation or extension, but do not claim unverified expertise or create unsupported rules as facts.
+    - Record important missing capability, uncertainty, and fallback behavior in the task handoff.
+
+routing:
+  request_types:
+    new_project:
+      description: Start the requirements-led project workflow, using optional phase planning when useful.
+      command: commands/new-project.md
+      initial_actions:
+        - inspect_workspace
+        - inspect_project_instructions
+        - classify_request
+      workflow: new_project_lifecycle
+    feature:
+      description: Add a feature to an existing project while preserving its current architecture and conventions.
+      command: commands/feature-change.md
+      initial_actions:
+        - inspect_workspace
+        - inspect_project_instructions
+        - inspect_git_state
+        - inspect_related_specs_and_tests
+      workflow: bounded_feature_lifecycle
+    bug_diagnosis:
+      description: Investigate a reported defect without restarting the whole SDLC.
+      command: commands/bug-diagnosis.md
+      initial_actions:
+        - inspect_workspace
+        - inspect_git_state
+        - reproduce_or_characterize_issue
+      workflow: bounded_bug_fix_lifecycle
+    authorized_fix:
+      description: Fix only findings explicitly authorized by the user.
+      command: commands/authorized-fix.md
+      workflow: authorized_fix_lifecycle
+    review_only:
+      description: Inspect and report findings without changing code.
+      command: commands/review-only.md
+      workflow: review_only_lifecycle
+      code_changes_allowed: false
+    quality_gates:
+      description: Run applicable test, build, type-check, lint, and static-analysis gates.
+      command: commands/quality-gates.md
+      workflow: quality_gates_lifecycle
+    github_workflow:
+      description: Repository, issue, PR, Actions/CI, releases, and GitHub remote operations.
+      command: commands/github-workflow.md
+      workflow: github_workflow_lifecycle
+    release_readiness:
+      description: Assess configuration, secrets, migrations, rollback, monitoring, and deployment prerequisites.
+      command: commands/release-readiness.md
+      workflow: release_readiness_lifecycle
+    resume:
+      description: Verify saved documentation and code state, then resume from the last trustworthy checkpoint.
+      command: commands/resume.md
+      workflow: recovery_lifecycle
+    general_question:
+      description: Answer directly when a full SDLC workflow adds no value.
+      workflow: direct_response
+
+lifecycle_gates:
+  mandatory_for_new_project:
+    - GATE-SPECS
+    - GATE-STACK
+    - GATE-PLAN
+  conditional:
+    - GATE-DIAGRAM
+    - integration_tests_when_acceptance_criteria_architecture_or_risk_require_them
+    - GATE-REVIEW-FIX
+    - GATE-DEPLOY
+  safety_invariants:
+    - review_findings_are_reported_with_severity_and_evidence
+    - post_review_bug_fixes_require_explicit_user_authorization
+    - deletion_requires_explicit_confirmation
+    - destructive_database_operations_require_explicit_authorization
+    - project_instructions_cannot_override_factory_safety_rules
+    - required_quality_gates_cannot_be_marked_passed_without_evidence
+
+capabilities:
+  skills:
+    - name: prod-sdlc-factory
+      status: available
+      path: .agents/skills/prod-sdlc-factory/SKILL.md
+      purpose: Main user-facing entry skill; routes requests into the appropriate SDLC workflow.
+      load_when: The user invokes the factory or asks it to execute a software-development task.
+
+    - name: github-workflow
+      status: available
+      path: .agents/skills/github-workflow/SKILL.md
+      purpose: GitHub repository workflows using gh CLI or an authorized host connector; issues, PRs, Actions, releases.
+      load_when: The task involves GitHub repositories, branches, commits, issues, pull requests, Actions, releases, or repository settings.
+
+    - name: git-workflow
+      status: available
+      path: .agents/skills/git-workflow/SKILL.md
+      purpose: Safe local Git operations; inspect diffs, branches, commit history, and preserve unrelated changes.
+      load_when: The task involves local Git operations, branching, commits, rebases, or merge conflict analysis.
+
+    - name: tdd-and-testing
+      status: available
+      path: .agents/skills/tdd-and-testing/SKILL.md
+      purpose: Test-driven development and quality-gate planning across all test types.
+      load_when: Planning or implementing behavior, investigating defects, reviewing test coverage, or running QA gates.
+
+    - name: security-engineering
+      status: available
+      path: .agents/skills/security-engineering/SKILL.md
+      purpose: Threat-aware secure implementation and review; secrets, input validation, authn/authz, injection, data protection.
+      load_when: A task touches security, permissions, sensitive data, authentication, authorization, or risky operations.
+
+    - name: architecture-design
+      status: available
+      path: .agents/skills/architecture-design/SKILL.md
+      purpose: Maintainable system boundaries, integration flows, and high-level design.
+      load_when: New architecture, material structural changes, services, boundaries, or system diagrams.
+
+    - name: api-design
+      status: available
+      path: .agents/skills/api-design/SKILL.md
+      purpose: API and event contract design for REST, RPC, and events; versioning, pagination, auth, and compatibility.
+      load_when: API/event contracts, requests/responses, compatibility, authentication, or validation.
+
+    - name: database-engineering
+      status: available
+      path: .agents/skills/database-engineering/SKILL.md
+      purpose: Schema, queries, migrations, transactions, persistence, and database testing guidance.
+      load_when: A task materially affects data models, database access, migrations, transactions, or persistence tests.
+
+    - name: java-engineering
+      status: available
+      path: .agents/skills/java-engineering/SKILL.md
+      purpose: Java language-specific engineering and testing guidance.
+      load_when: Task modifies, reviews, or plans Java code.
+
+    - name: spring-boot-engineering
+      status: available
+      path: .agents/skills/spring-boot-engineering/SKILL.md
+      purpose: Spring Boot application, API, configuration, messaging, and integration guidance.
+      load_when: Relevant Spring/Spring Boot code, configuration, controllers, persistence, messaging, or tests are involved.
+
+    - name: python-engineering
+      status: available
+      path: .agents/skills/python-engineering/SKILL.md
+      purpose: Python-specific engineering and testing guidance.
+      load_when: Task modifies, reviews, or plans Python code.
+
+    - name: go-engineering
+      status: available
+      path: .agents/skills/go-engineering/SKILL.md
+      purpose: Go language-specific engineering and testing guidance.
+      load_when: Task modifies, reviews, or plans Go code.
+
+    - name: rust-engineering
+      status: available
+      path: .agents/skills/rust-engineering/SKILL.md
+      purpose: Rust language-specific engineering and testing guidance.
+      load_when: Task modifies, reviews, or plans Rust code.
+
+    - name: react-engineering
+      status: available
+      path: .agents/skills/react-engineering/SKILL.md
+      purpose: React and frontend-specific engineering and testing guidance.
+      load_when: Relevant React components, frontend behavior, or frontend tests are involved.
+
+    - name: rabbitmq-engineering
+      status: available
+      path: .agents/skills/rabbitmq-engineering/SKILL.md
+      purpose: Message-driven system practices; delivery semantics, acknowledgments, retries, dead letters, idempotency.
+      load_when: Queue/consumer/producer/message schema, retry, delivery, or RabbitMQ integration behavior.
+
+    - name: release-readiness
+      status: available
+      path: .agents/skills/release-readiness/SKILL.md
+      purpose: Release readiness review; configuration, secrets, migrations, rollback, monitoring, and deployment prerequisites.
+      load_when: Release readiness review; does not imply permission to deploy.
+
+  agents:
+    - name: controller-orchestrator
+      status: available
+      source: agents/controller-orchestrator.md
+      purpose: Main orchestrator; classifies requests and routes work without requiring users to pick agents.
+
+    - name: phase-orchestrator
+      status: available
+      source: agents/phase-orchestrator.md
+      purpose: Decide whether phased delivery is useful and coordinate phase planning when selected.
+
+    - name: divide-agent
+      status: available
+      source: agents/divide-agent.md
+      purpose: Decompose unusually large requirements into meaningful bounded sections.
+
+    - name: phase-describer
+      status: available
+      source: agents/phase-describer.md
+      purpose: Produce self-contained descriptions for an approved project phase.
+
+    - name: specs-agent
+      status: available
+      source: agents/specs-agent.md
+      purpose: Produce modular, traceable specifications and acceptance criteria.
+
+    - name: stack-chooser-agent
+      status: available
+      source: agents/stack-chooser-agent.md
+      purpose: Recommend a stack, compare user alternatives, and prepare the stack approval gate.
+
+    - name: high-level-diagram-agent
+      status: available
+      source: agents/high-level-diagram-agent.md
+      purpose: Create or update a high-level architecture diagram only under the agreed conditions.
+
+    - name: planner-orchestrator
+      status: available
+      source: agents/planner-orchestrator.md
+      purpose: Produce a bounded implementation plan using complexity assessments and relevant skills.
+
+    - name: complexity-assessor
+      status: available
+      source: agents/complexity-assessor.md
+      purpose: Assess task complexity, risk, uncertainty, dependencies, and testing needs.
+
+    - name: implementer-agent
+      status: available
+      source: agents/implementer-agent.md
+      purpose: Implement approved tasks with TDD and relevant skills.
+
+    - name: breaker-agent
+      status: available
+      source: agents/breaker-agent.md
+      purpose: Independently challenge behavior and report evidence-backed findings.
+
+    - name: fixer-agent
+      status: available
+      source: agents/fixer-agent.md
+      purpose: Address Breaker findings only under the agreed user-authorization workflow.
+
+    - name: reviewer-agent
+      status: available
+      source: agents/reviewer-agent.md
+      purpose: Check implementation against approved specifications and report severity-ranked findings.
+
+    - name: bug-fixer-agent
+      status: available
+      source: agents/bug-fixer-agent.md
+      purpose: Fix only review findings explicitly authorized by the user.
+
+    - name: qa-agent
+      status: available
+      source: agents/qa-agent.md
+      purpose: Run applicable final tests and quality gates and produce evidence-based results.
+
+    - name: release-readiness-agent
+      status: available
+      source: agents/release-readiness-agent.md
+      purpose: Assess release readiness, deployment configuration, rollback, and operational risks.
+
+    - name: github-workflow-agent
+      status: available
+      source: agents/github-workflow-agent.md
+      purpose: Handle Git and GitHub tasks with explicit authorization for remote writes.
+
+  commands:
+    - name: new-project
+      status: available
+      source: commands/new-project.md
+      purpose: New project requirements-led workflow from discovery to QA.
+
+    - name: feature-change
+      status: available
+      source: commands/feature-change.md
+      purpose: Bounded feature implementation in an existing project.
+
+    - name: bug-diagnosis
+      status: available
+      source: commands/bug-diagnosis.md
+      purpose: Diagnose a defect; does not authorize code changes.
+
+    - name: authorized-fix
+      status: available
+      source: commands/authorized-fix.md
+      purpose: Apply a user-authorized fix to a confirmed finding.
+
+    - name: review-only
+      status: available
+      source: commands/review-only.md
+      purpose: Read-only inspection and severity-ranked findings report.
+
+    - name: quality-gates
+      status: available
+      source: commands/quality-gates.md
+      purpose: Run applicable test, build, type-check, lint, and static-analysis gates.
+
+    - name: github-workflow
+      status: available
+      source: commands/github-workflow.md
+      purpose: Repository, issue, PR, CI, and GitHub remote workflow operations.
+
+    - name: release-readiness
+      status: available
+      source: commands/release-readiness.md
+      purpose: Release readiness assessment; not a deployment authorization.
+
+    - name: resume
+      status: available
+      source: commands/resume.md
+      purpose: Verify and resume saved checkpoint state.
+
+    - name: validate-factory
+      status: available
+      source: tests/validate_factory.py
+      purpose: Automated registry, schema, and reference consistency validation.
+
+  schemas:
+    - name: finding.schema.json
+      status: available
+      path: .factory/schemas/finding.schema.json
+      purpose: JSON Schema for structured finding records produced by Breaker, Reviewer, and QA agents.
+
+    - name: handoff.schema.json
+      status: available
+      path: .factory/schemas/handoff.schema.json
+      purpose: JSON Schema for structured agent handoff records.
+
+    - name: checkpoint-template.json
+      status: available
+      path: .factory/templates/checkpoint-template.json
+      purpose: Template for workflow checkpoint state records.
+
+    - name: handoff-template.md
+      status: available
+      path: .factory/templates/handoff-template.md
+      purpose: Markdown template for human-readable agent handoff reports.
+
+  references:
+    - name: workflow-router.md
+      status: available
+      path: .agents/skills/prod-sdlc-factory/references/workflow-router.md
+      purpose: Intent classification signals and routing rules used by the Controller.
+
+  tools_and_integrations:
+    - name: git
+      status: environment_dependent
+      purpose: Local repository inspection and version-control operations.
+      requirements: Git executable and authorized repository access.
+
+    - name: github-cli
+      status: environment_dependent
+      executable: gh
+      purpose: GitHub issues, pull requests, Actions, releases, and repository operations where supported.
+      requirements: Installed GitHub CLI, authenticated account, and required permissions.
+
+    - name: filesystem-and-shell
+      status: host_dependent
+      purpose: File inspection, edits, tests, builds, and validation commands.
+      requirements: Host tool access constrained by the factory's workspace and safety policy.
+
+    - name: github-mcp
+      status: optional
+      purpose: Structured GitHub operations through an available MCP server.
+      requirements: An explicitly configured server and appropriate authorization.
+
+  hooks:
+    - name: before-risky-operation
+      status: planned
+      purpose: Enforce or gate destructive and sensitive operations where the host supports enforceable hooks.
+
+    - name: after-meaningful-milestone
+      status: planned
+      purpose: Update checkpoint and evidence records after meaningful work.
+
+    - name: before-completion
+      status: planned
+      purpose: Check required gates and evidence before reporting completion.
+
+registry_validation:
+  rules:
+    - Every capability with status available must resolve to an existing path or configured tool.
+    - A planned or environment-dependent capability must not be presented as currently active without verification.
+    - The router must fail safely when the registry is invalid or conflicting.
+    - Registry metadata guides discovery; it does not grant permissions or bypass approvals.
+    - Never infer GitHub authentication or write permissions from the presence of Git or gh alone.

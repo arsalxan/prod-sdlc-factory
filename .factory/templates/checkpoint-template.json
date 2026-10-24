@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "updated_at": "",
+  "project_root": "",
+  "repository": {
+    "remote": null,
+    "branch": null,
+    "commit": null,
+    "worktree_status": "UNKNOWN"
+  },
+  "route": "",
+  "stage": "DISCOVERY",
+  "task_status": "NOT_STARTED",
+  "task": {},
+  "approved_artifacts": [],
+  "completed_substeps": [],
+  "pending_substeps": [],
+  "test_evidence": [],
+  "findings": [],
+  "authorizations": [],
+  "blockers": [],
+  "documentation_confidence": "UNASSESSED",
+  "code_confidence": "UNASSESSED",
+  "recovery_integrity": "INTEGRITY_UNVERIFIED",
+  "next_action": "Verify repository and approved artifact state before continuing"
+}
