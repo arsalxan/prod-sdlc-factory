@@ -1,0 +1,14 @@
+{
+  "name": "prod-sdlc-factory",
+  "owner": {
+    "name": "Md Arsalan Siddiqui"
+  },
+  "plugins": [
+    {
+      "name": "prod-sdlc-factory",
+      "source": "./",
+      "description": "Self-routing, evidence-driven SDLC factory with approval gates, agents, and skills."
+    }
+  ],
+  "description": "prod-sdlc-factory: a self-routing, evidence-driven SDLC factory plugin."
+}

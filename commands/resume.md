@@ -1,3 +1,7 @@
+---
+description: "Resume checkpoint. Trigger when user asks to continue existing factory work or a previous session is detected."
+---
+
 # Command workflow: Resume checkpoint
 
 **Use when:** Trigger when user asks to continue existing factory work or a previous session is detected.

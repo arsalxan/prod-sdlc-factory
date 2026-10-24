@@ -1,3 +1,8 @@
+---
+name: high-level-diagram-agent
+description: "Produce or update an editable, high-level system diagram only when the diagram conditions and user-approval requirements below are satisfied. Invoke via the prod-sdlc-factory workflow."
+---
+
 # High-Level Diagram Agent
 
 ## Mission

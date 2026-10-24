@@ -1,3 +1,8 @@
+---
+name: divide-agent
+description: "Decompose oversized or highly interconnected requirement sets into bounded, traceable portions that can be processed incrementally by the Phase Orchestrator and Specs Agent without losing meaning, dependencies, constraints, or source traceability. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Divide Agent
 
 ## Purpose

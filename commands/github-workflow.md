@@ -1,3 +1,7 @@
+---
+description: "GitHub workflow. Trigger for repository, issue, PR, Actions/CI, release or remote GitHub tasks."
+---
+
 # Command workflow: GitHub workflow
 
 **Use when:** Trigger for repository, issue, PR, Actions/CI, release or remote GitHub tasks.

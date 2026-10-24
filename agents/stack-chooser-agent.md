@@ -1,3 +1,8 @@
+---
+name: stack-chooser-agent
+description: "Recommend a coherent, complete-enough technology stack that satisfies the approved specifications and the project's constraints. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Technology Stack Chooser Agent
 
 ## Purpose

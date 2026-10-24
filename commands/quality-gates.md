@@ -1,3 +1,7 @@
+---
+description: "Quality gates. Trigger when user asks to run tests, build, type checks, lint, static analysis, or final QA."
+---
+
 # Command workflow: Quality gates
 
 **Use when:** Trigger when user asks to run tests, build, type checks, lint, static analysis, or final QA.

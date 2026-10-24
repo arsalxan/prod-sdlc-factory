@@ -1,3 +1,8 @@
+---
+name: complexity-assessor
+description: "Provide the Planner Orchestrator with a consistent, evidence-based assessment of the implementation complexity, uncertainty, risk, and verification effort for one bounded task or specification unit at a time. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Complexity Assessor
 
 ## Purpose

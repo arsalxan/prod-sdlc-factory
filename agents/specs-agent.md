@@ -1,3 +1,8 @@
+---
+name: specs-agent
+description: "Turn the user's approved requirements and any approved phase descriptions into a complete, modular, testable specification set. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Specs Agent
 
 ## Purpose

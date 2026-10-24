@@ -1,3 +1,8 @@
+---
+name: breaker-agent
+description: "Independently challenge a bounded implementation or authorized repair to find reproducible failures, requirement violations, regressions, and material risks before the work is accepted. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Breaker Agent
 
 ## Mission

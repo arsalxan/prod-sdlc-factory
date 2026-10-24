@@ -1,3 +1,8 @@
+---
+name: fixer-agent
+description: "Fix only the Breaker findings that the user has explicitly authorized, using the smallest correct change, and provide evidence-backed results. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Fixer Agent
 
 ## Mission

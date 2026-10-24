@@ -1,0 +1,47 @@
+{
+  "name": "prod-sdlc-factory",
+  "description": "A self-routing, evidence-driven SDLC factory: approval gates, specialist agents, reusable technology skills, TDD, review, and quality gates.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Md Arsalan Siddiqui"
+  },
+  "repository": "https://github.com/arsalxan/prod-sdlc-factory",
+  "keywords": [
+    "sdlc",
+    "workflow",
+    "agents",
+    "tdd",
+    "code-review"
+  ],
+  "skills": "./.agents/skills",
+  "agents": [
+    "./agents/breaker-agent.md",
+    "./agents/bug-fixer-agent.md",
+    "./agents/complexity-assessor.md",
+    "./agents/controller-orchestrator.md",
+    "./agents/divide-agent.md",
+    "./agents/fixer-agent.md",
+    "./agents/github-workflow-agent.md",
+    "./agents/high-level-diagram-agent.md",
+    "./agents/implementer-agent.md",
+    "./agents/phase-describer.md",
+    "./agents/phase-orchestrator.md",
+    "./agents/planner-orchestrator.md",
+    "./agents/qa-agent.md",
+    "./agents/release-readiness-agent.md",
+    "./agents/reviewer-agent.md",
+    "./agents/specs-agent.md",
+    "./agents/stack-chooser-agent.md"
+  ],
+  "commands": [
+    "./commands/authorized-fix.md",
+    "./commands/bug-diagnosis.md",
+    "./commands/feature-change.md",
+    "./commands/github-workflow.md",
+    "./commands/new-project.md",
+    "./commands/quality-gates.md",
+    "./commands/release-readiness.md",
+    "./commands/resume.md",
+    "./commands/review-only.md"
+  ]
+}

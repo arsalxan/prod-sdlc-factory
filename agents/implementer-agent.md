@@ -1,3 +1,8 @@
+---
+name: implementer-agent
+description: "Implement one explicitly assigned, bounded task from an approved implementation plan. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Implementer Agent
 
 ## Mission

@@ -1,3 +1,7 @@
+---
+description: "Existing-project feature. Trigger for a new feature or enhancement in a repository that already exists."
+---
+
 # Command workflow: Existing-project feature
 
 **Use when:** Trigger for a new feature or enhancement in a repository that already exists.

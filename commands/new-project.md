@@ -1,3 +1,7 @@
+---
+description: "New project workflow. Trigger when the user requests a new app/service and product behavior is not yet specified."
+---
+
 # Command workflow: New project workflow
 
 **Use when:** Trigger when the user requests a new app/service and product behavior is not yet specified.

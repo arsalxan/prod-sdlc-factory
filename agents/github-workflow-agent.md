@@ -1,3 +1,8 @@
+---
+name: github-workflow-agent
+description: "Handle bounded GitHub-related work for `prod-sdlc-factory`, including repository discovery, issues, branches, pull requests, GitHub Actions/CI, releases, and repository metadata. Invoke via the prod-sdlc-factory workflow."
+---
+
 # GitHub Workflow Agent
 
 ## Purpose

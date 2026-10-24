@@ -1,3 +1,7 @@
+---
+description: "Review only. Trigger when user asks for review/audit without asking for modifications."
+---
+
 # Command workflow: Review only
 
 **Use when:** Trigger when user asks for review/audit without asking for modifications.

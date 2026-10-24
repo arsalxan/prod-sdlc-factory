@@ -1,3 +1,7 @@
+---
+description: "Bug diagnosis. Trigger when user wants to understand a bug/test/CI failure before authorizing changes."
+---
+
 # Command workflow: Bug diagnosis
 
 **Use when:** Trigger when user wants to understand a bug/test/CI failure before authorizing changes.

@@ -1,3 +1,8 @@
+---
+name: qa-agent
+description: "Independently determine whether the current code state satisfies the applicable approved quality gates. Invoke via the prod-sdlc-factory workflow."
+---
+
 # QA and Quality Gates Agent
 
 ## Mission

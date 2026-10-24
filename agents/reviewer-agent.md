@@ -1,3 +1,8 @@
+---
+name: reviewer-agent
+description: "Perform an independent, read-only conformance review of the implementation against the approved specifications, acceptance criteria, approved implementation plan, and applicable project instructions. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Reviewer Agent
 
 ## Mission

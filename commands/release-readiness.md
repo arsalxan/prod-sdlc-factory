@@ -1,3 +1,7 @@
+---
+description: "Release readiness. Trigger when user asks whether a release is ready or asks for a release checklist."
+---
+
 # Command workflow: Release readiness
 
 **Use when:** Trigger when user asks whether a release is ready or asks for a release checklist.

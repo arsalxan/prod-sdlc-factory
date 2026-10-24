@@ -1,3 +1,7 @@
+---
+description: "Authorized fix workflow. Trigger when user explicitly asks to fix a known issue or previously reported finding."
+---
+
 # Command workflow: Authorized fix workflow
 
 **Use when:** Trigger when user explicitly asks to fix a known issue or previously reported finding.

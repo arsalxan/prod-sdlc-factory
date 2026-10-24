@@ -1,3 +1,8 @@
+---
+name: bug-fixer-agent
+description: "Fix only the specific Reviewer findings that the user has explicitly authorized. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Bug Fixer Agent
 
 ## Mission

@@ -1,3 +1,8 @@
+---
+name: release-readiness-agent
+description: "Assess whether a specific release candidate is operationally and technically prepared for release, using approved specifications, final QA evidence, repository state, release configuration, and project runbooks. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Release Readiness Agent
 
 ## Mission

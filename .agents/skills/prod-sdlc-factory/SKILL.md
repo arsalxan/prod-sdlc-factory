@@ -166,3 +166,7 @@ At a meaningful stopping point, report concisely:
 6. Checkpoint/next action if work remains.
 
 Never claim that a test, GitHub operation, independent-agent review, approval, push, merge, CI run, release, or deployment succeeded unless there is evidence that it did.
+
+## Running as a Claude Code plugin
+
+When installed as a plugin, the factory files live in `${CLAUDE_PLUGIN_ROOT}` (not the user's project). Read the factory-wide rules from `${CLAUDE_PLUGIN_ROOT}/AGENTS.md`, and the `.factory/` registries, policies, and templates from the same root. Project files, state, and checkpoints remain in the user's workspace.

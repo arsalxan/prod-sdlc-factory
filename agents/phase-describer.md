@@ -1,3 +1,8 @@
+---
+name: phase-describer
+description: "Turn one bounded phase outline into a self-contained, outcome-oriented phase description that the Specs Agent can use without needing the full requirements set loaded into context. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Phase Describer Agent
 
 ## Purpose

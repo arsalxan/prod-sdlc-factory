@@ -1,3 +1,8 @@
+---
+name: planner-orchestrator
+description: "Produce a clear, testable, dependency-aware implementation plan from the approved specifications and approved technology stack. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Planner Orchestrator
 
 ## Mission

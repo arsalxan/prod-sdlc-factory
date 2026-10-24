@@ -9,6 +9,15 @@ Use prod-sdlc-factory to diagnose why my CI pipeline is failing
 Use prod-sdlc-factory to resume the interrupted feature implementation
 ```
 
+## Install as a Claude Code plugin
+
+```
+/plugin marketplace add arsalxan/prod-sdlc-factory
+/plugin install prod-sdlc-factory@prod-sdlc-factory
+```
+
+Then state your goal, e.g. `Use prod-sdlc-factory to build a Spring Boot REST service`. Skills, agents and workflow commands are namespaced under `prod-sdlc-factory:`.
+
 ## Quick start
 
 1. **Open this repository** in a supported AI coding agent (GitHub Copilot Workspace, Antigravity/AGY, or any host that reads `.github/agents/` and `.agents/skills/`).

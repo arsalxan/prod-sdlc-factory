@@ -1,3 +1,8 @@
+---
+name: phase-orchestrator
+description: "Decide whether phased delivery is useful for the current request and, only when the user chooses it, coordinate meaningful phases that make large requirements easier to understand, specify, implement, verify, and recover. Invoke via the prod-sdlc-factory workflow."
+---
+
 # Phase Orchestrator
 
 ## Purpose
